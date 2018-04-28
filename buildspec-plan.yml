@@ -1,0 +1,21 @@
+version: 0.2
+
+env:
+  variables:
+    terraform_version: "0.11.7"
+    s3_bucket: "get-chofu-city-gabage-skill-tsubauaaa-s3"
+phases:
+  install:
+    commands:
+      - cd /tmp && aws s3 cp s3://${s3_bucket}/terraform_${terraform_version}_linux_amd64.zip ./terraform.zip && unzip terraform.zip && mv terraform /usr/bin
+  pre_build:
+      - cd ${CODEBUILD_SRC_DIR}
+      - rm -rf .terraform
+      - terraform init -backend-config bucket=${s3_bucket} terraform
+      - terraform plan terraform
+  build:
+    commands:
+      - echo Nothing to do in the build phase...
+  post_build:
+    commands:
+      - echo Build completed on `date`
