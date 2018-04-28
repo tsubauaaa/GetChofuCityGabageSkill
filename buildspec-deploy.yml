@@ -16,7 +16,7 @@ phases:
       - terraform plan
   build:
     commands:
-      - echo Nothing to do in the build phase...
+      - terraform apply -auto-approve terraform
   post_build:
     commands:
       - echo Build completed on `date`
