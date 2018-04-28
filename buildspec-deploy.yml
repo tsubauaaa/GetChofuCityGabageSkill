@@ -10,13 +10,13 @@ phases:
       - cd /tmp && aws s3 cp s3://${s3_bucket}/terraform_${terraform_version}_linux_amd64.zip ./terraform.zip && unzip terraform.zip && mv terraform /usr/bin
   pre_build:
     commands:
-      - cd ${CODEBUILD_SRC_DIR}/terraform
+      - cd ${CODEBUILD_SRC_DIR}/src
       - zip -X -J -r GetChofuCityGabageSkill.zip . -x '*.tf' '*pyc'
       - terraform init -backend-config bucket=${s3_bucket}
       - terraform plan
   build:
     commands:
-      - terraform apply -auto-approve terraform
+      - terraform apply -auto-approve
   post_build:
     commands:
       - echo Build completed on `date`
