@@ -14,6 +14,7 @@ def fetch_garbage_type(district_num, target_date):
     s3_client = boto3.client('s3')
     res = s3_client.get_object(Bucket=bucket_name, Key=key_name)
     garbage_calender = res['Body'].read().decode('utf-8')
+    garbage_type = "不明"
     for line in garbage_calender.split('\r\n'):
         if day == line.split(",")[0]:
             garbage_type = line.split(",")[1]
