@@ -14,7 +14,8 @@ def fetch_garbage_type(district_num, target_date):
     s3_client = boto3.client('s3')
     res = s3_client.get_object(Bucket=bucket_name, Key=key_name)
     print(res)
-    body = res['Body'].read()
+    body = res['Body'].read().decode('utf-8')
+
     print(body)
 
 
