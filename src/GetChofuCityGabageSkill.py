@@ -30,6 +30,9 @@ def lambda_handler(event, context):
     device_id = event["context"]["System"]["device"]["deviceId"]
     token = event["context"]["System"]["user"]["permissions"]["consentToken"]
 
+    print(api_host)
+    print(device_id)
+    print(token)
     address = describe_device_address(api_host, device_id, token)
 
     print(address)
