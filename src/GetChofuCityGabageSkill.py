@@ -3,12 +3,24 @@ import urllib.request
 from datetime import datetime, timedelta
 
 
-def describe_device_address(api_host, device_id, access_token):
+def find_district_number(zip_code):
+    params = {'zipcode': zip_code}
+    zipcloud_url = "http://zipcloud.ibsnet.co.jp/api/search"
+    req = urllib.request.Request(zipcloud_url + "?" + urllib.parse.urlencode(params))
+    res = urllib.request.urlopen(req)
+    addr_data = json.loads(res.read())
+    address3 = addr_data['results'][0]['address3']
+
+    return 1
+
+
+def fetch_zip_code(api_host, device_id, access_token):
     endpoint_url = api_host + "/v1/devices/" + device_id + "/settings/address/countryAndPostalCode"
     headers = {"Authorization": "Bearer " + access_token}
     req = urllib.request.Request(endpoint_url, headers=headers)
     res = urllib.request.urlopen(req)
-    return json.loads(res.read())
+    addr_data = json.loads(res.read())
+    return addr_data['postalCode'].replace("-", "")
 
 
 def create_week_dictionary():
@@ -21,18 +33,26 @@ def create_week_dictionary():
 
 
 def lambda_handler(event, context):
-    #try:
-    api_endpoint = event["context"]["System"]["apiEndpoint"]
-    device_id = event["context"]["System"]["device"]["deviceId"]
-    token = event["context"]["System"]["user"]["permissions"]["consentToken"]
-    #except:
-    #    api_endpoint = None
-    #    device_id = None
-    #    token = None
+    try:
+        api_endpoint = event["context"]["System"]["apiEndpoint"]
+        device_id = event["context"]["System"]["device"]["deviceId"]
+        token = event["context"]["System"]["user"]["permissions"]["consentToken"]
+    except KeyError:
+        api_endpoint = None
+        device_id = None
+        token = None
 
-    address = describe_device_address(api_endpoint, device_id, token)
+    zip_code = None
+    if api_endpoint and device_id and token:
+        zip_code = fetch_zip_code(api_endpoint, device_id, token)
 
-    print(address)
+    print("zipCode:" + zip_code)
+
+    district_num = 4
+    if zip_code:
+        district_num = find_district_number(zip_code)
+
+    print(district_num)
 
     today = datetime.now().strftime("%Y%m%d")
     tommorow = (datetime.now()+timedelta(1)).strftime("%Y%m%d")
