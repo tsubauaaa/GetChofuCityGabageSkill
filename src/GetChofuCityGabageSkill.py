@@ -1,5 +1,15 @@
 from datetime import datetime, timedelta
 
+
+def create_week_dictionary():
+    keys = []
+    values = []
+    for i in range(7):
+        keys.append((datetime.now()+timedelta(i)).weekday())
+        values.append((datetime.now()+timedelta(i)).strftime("%Y%m%d"))
+    return dict(zip(keys, values))
+
+
 def lambda_handler(event, context):
     print(event)
     today = datetime.now().strftime("%Y%m%d")
@@ -25,12 +35,3 @@ def lambda_handler(event, context):
         }
     }
     return response
-
-
-def create_week_dictionary():
-    keys = []
-    values = []
-    for i in range(7):
-        keys.append((datetime.now()+timedelta(i)).weekday())
-        values.append((datetime.now()+timedelta(i)).strftime("%Y%m%d"))
-    return dict(zip(keys, values))
