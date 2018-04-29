@@ -16,6 +16,9 @@ def fetch_garbage_type(district_num, target_date):
     garbage_calender = res['Body'].read().decode('utf-8')
     garbage_type = "不明"
     for line in garbage_calender.split('\r\n'):
+        print(line.split(",")[0])
+        print(line.split(",")[1])
+        print(day)
         if day == line.split(",")[0]:
             garbage_type = line.split(",")[1]
 
