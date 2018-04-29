@@ -62,11 +62,10 @@ def lambda_handler(event, context):
     if zip_code:
         district_num = find_district_number(zip_code)
 
-    print("地区は" + str(district_num) + "です")
-
     today = datetime.now().strftime("%Y%m%d")
     tommorow = (datetime.now() + timedelta(1)).strftime("%Y%m%d")
     week = create_week_dictionary()
+    print(event)
     intent = event['request']['intent']
     print(intent)
     when = intent['slots']['When']['value']
@@ -76,7 +75,7 @@ def lambda_handler(event, context):
     elif when == '明日':
         garbage = '燃えないゴミの日は水曜日です。'
 
-    text = "第" + district_num + "地区のごみ出しは" + garbage
+    text = "第" + str(district_num) + "地区のごみ出しは" + garbage
     response = {
         'version': '1.0',
         'response': {
