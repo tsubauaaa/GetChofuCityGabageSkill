@@ -83,20 +83,22 @@ def lambda_handler(event, context):
     if zip_code:
         district_num = find_district_number(zip_code)
 
-    intent = event['request']['intent']
-    when = intent['slots']['When']['value']
+    when_value = event['request']['intent']['slots']['When']['value']
+    when_resol_value = event['request']['intent']['slots']['When']['resolutions']['resolutionsPerAuthority'][0]['values'][0]['value']
+    when_resol_name = when_resol_value['name']
+    when_resol_id = when_resol_value['id']
     week = create_week_dictionary()
 
-    if when in ["今日", "本日"]:
+    if when_resol_id == "today":
         target_date = datetime.now().strftime('%Y/%m/%d')
-    elif when in ["明日", "次の日"]:
+    elif when_resol_id == "tommorow":
         target_date = (datetime.now() + timedelta(1)).strftime('%Y/%m/%d')
-    elif when in "曜":
-            target_date = week[when]
+    elif when_resol_id == "dayweek":
+        target_date = week[when_resol_name]
 
     garbage_type = fetch_garbage_type(district_num, target_date)
 
-    text = when + "の第" + str(district_num) + "地区のごみ出しは" + garbage_type + "です。"
+    text = when_value + "の第" + str(district_num) + "地区のごみ出しは" + garbage_type + "です。"
     response = {
         'version': '1.0',
         'response': {
