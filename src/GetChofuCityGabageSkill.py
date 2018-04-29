@@ -1,4 +1,17 @@
 from datetime import datetime, timedelta
+import json
+import urllib2
+
+
+def describe_device_address(api_host, device_id, access_token):
+    req = urllib2.Request("{}/v1/devices/{}/settings/address".format(api_host, device_id))
+    req.add_header("Authorization", "Bearer {}".format(access_token))
+    response = urllib2.urlopen(req)
+    if response.getcode() == 200:
+        return json.loads(response.read())
+    else:
+        print(response.getcode())
+        raise Exception(response.msg)
 
 
 def create_week_dictionary():
@@ -12,6 +25,14 @@ def create_week_dictionary():
 
 def lambda_handler(event, context):
     print(event)
+    api_host = event["context"]["System"]["apiEndpoint"]
+    device_id = event["context"]["System"]["device"]["deviceId"]
+    token = event["context"]["System"]["user"]["permissions"]["consentToken"]
+
+    address = describe_device_address(api_host, device_id, token)
+
+    print(address)
+
     today = datetime.now().strftime("%Y%m%d")
     tommorow = (datetime.now()+timedelta(1)).strftime("%Y%m%d")
     week = create_week_dictionary()
