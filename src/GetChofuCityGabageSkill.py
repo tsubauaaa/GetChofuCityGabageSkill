@@ -107,7 +107,7 @@ def lambda_handler(event, context):
 
     garbage_type = fetch_garbage_type(district_num, target_date)
 
-    text = "第" + str(district_num) + "地区のごみ出しは" + garbage_type + "です。"
+    text = when + "の第" + str(district_num) + "地区のごみ出しは" + garbage_type + "です。"
     response = {
         'version': '1.0',
         'response': {
