@@ -13,7 +13,8 @@ def fetch_garbage_type(district_num, target_date):
         str(district_num) + "/" + year_month + "garbage_calender.csv"
     s3_client = boto3.client('s3')
     res = s3_client.get_object(Bucket=bucket_name, Key=key_name)
-    body = res.read()
+    print(res)
+    body = res['Body'].read()
     print(body)
 
 
