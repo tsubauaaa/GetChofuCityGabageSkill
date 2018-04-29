@@ -90,19 +90,19 @@ def lambda_handler(event, context):
         target_date = datetime.now().strftime('%Y/%m/%d')
     elif when == "明日":
         target_date = (datetime.now() + timedelta(1)).strftime('%Y/%m/%d')
-    elif when == "日曜日":
-        target_date = week[0]
     elif when == "月曜日":
-        target_date = week[1]
+        target_date = week[0]
     elif when == "火曜日":
-        target_date = week[2]
+        target_date = week[1]
     elif when == "水曜日":
-        target_date = week[3]
+        target_date = week[2]
     elif when == "木曜日":
-        target_date = week[4]
+        target_date = week[3]
     elif when == "金曜日":
-        target_date = week[5]
+        target_date = week[4]
     elif when == "土曜日":
+        target_date = week[5]
+    elif when == "日曜日":
         target_date = week[6]
 
     garbage_type = fetch_garbage_type(district_num, target_date)
