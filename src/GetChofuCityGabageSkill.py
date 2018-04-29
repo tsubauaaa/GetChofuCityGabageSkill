@@ -15,12 +15,13 @@ def fetch_garbage_type(district_num, target_date):
     res = s3_client.get_object(Bucket=bucket_name, Key=key_name)
     garbage_calender = res['Body'].read().decode('utf-8')
     garbage_type = "不明"
+    print(garbage_calender.split('\r\n'))
     for line in garbage_calender.split('\r\n'):
-        print(line.split(",")[0])
-        print(line.split(",")[1])
-        print(day)
-        if day == line.split(",")[0]:
-            garbage_type = line.split(",")[1]
+        if day == line.split(',')[0]:
+            print(line.split(',')[0])
+            print(line.split(',')[1])
+            print(day)
+            garbage_type = line.split(',')[1]
 
     return garbage_type
 
@@ -54,7 +55,7 @@ def fetch_zip_code(api_host, device_id, access_token):
     req = urllib.request.Request(endpoint_url, headers=headers)
     res = urllib.request.urlopen(req)
     addr_data = json.loads(res.read())
-    return addr_data['postalCode'].replace("-", "")
+    return addr_data['postalCode'].replace('-', '')
 
 
 def create_week_dictionary():
@@ -69,9 +70,9 @@ def create_week_dictionary():
 def lambda_handler(event, context):
     print(event)
     try:
-        api_endpoint = event["context"]["System"]["apiEndpoint"]
-        device_id = event["context"]["System"]["device"]["deviceId"]
-        token = event["context"]["System"]["user"]["permissions"]["consentToken"]
+        api_endpoint = event['context']['System']['apiEndpoint']
+        device_id = event['context']['System']['device']['deviceId']
+        token = event['context']['System']['user']['permissions']['consentToken']
     except KeyError:
         api_endpoint = None
         device_id = None
@@ -89,10 +90,10 @@ def lambda_handler(event, context):
     intent = event['request']['intent']
     when = intent['slots']['When']['value']
 
-    if when == '今日':
-        target_date = datetime.now().strftime("%Y/%m/%d")
-    elif when == '明日':
-        target_date = (datetime.now() + timedelta(1)).strftime("%Y/%m/%d")
+    if when == "今日":
+        target_date = datetime.now().strftime('%Y/%m/%d')
+    elif when == "明日":
+        target_date = (datetime.now() + timedelta(1)).strftime('%Y/%m/%d')
 
     garbage_type = fetch_garbage_type(district_num, target_date)
 
