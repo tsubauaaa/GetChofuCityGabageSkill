@@ -13,11 +13,12 @@ def fetch_garbage_type(district_num, target_date):
         str(district_num) + "/" + year_month + "garbage_calender.csv"
     s3_client = boto3.client('s3')
     res = s3_client.get_object(Bucket=bucket_name, Key=key_name)
-    print(res)
     garbage_calender = res['Body'].read().decode('utf-8')
     for line in garbage_calender.split('\r\n'):
         if day == line.split(",")[0]:
-            return line.split(",")[1]
+            garbage_type = line.split(",")[1]
+
+    return garbage_type
 
 
 def find_district_number(zip_code):
@@ -62,6 +63,7 @@ def create_week_dictionary():
 
 
 def lambda_handler(event, context):
+    print(event)
     try:
         api_endpoint = event["context"]["System"]["apiEndpoint"]
         device_id = event["context"]["System"]["device"]["deviceId"]
