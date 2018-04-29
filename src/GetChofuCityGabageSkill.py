@@ -1,12 +1,13 @@
-from datetime import datetime, timedelta
 import json
-import urllib2
+import urllib.request
+from datetime import datetime, timedelta
 
 
 def describe_device_address(api_host, device_id, access_token):
-    req = urllib2.Request("{}/v1/devices/{}/settings/address".format(api_host, device_id))
-    req.add_header("Authorization", "Bearer {}".format(access_token))
-    response = urllib2.urlopen(req)
+    headers = {"Authorization": "Bearer " + access_token}
+    endpoint = api_host + "/v1/devices/" + device_id + "/settings/address"
+    req = urllib.request.Request(endpoint, headers=headers)
+    response = urllib.request.urlopen(req)
     if response.getcode() == 200:
         return json.loads(response.read())
     else:
