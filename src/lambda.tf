@@ -11,6 +11,7 @@ resource "aws_lambda_function" "GetChofuCityGabageSkill" {
   environment {
     variables = {
       BUCKET_NAME = "${var.s3_bucket_name}"
+      TZ          = "Asia/Tokyo"
     }
   }
 }
