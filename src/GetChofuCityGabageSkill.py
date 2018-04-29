@@ -84,18 +84,15 @@ def lambda_handler(event, context):
         district_num = find_district_number(zip_code)
 
     intent = event['request']['intent']
-    when_value = intent['slots']['When']['value']
-    when_synonyms = intent['slots']['When']['synonyms']
-    whens = when_synonyms.append(when_value)
+    when = intent['slots']['When']['value']
     week = create_week_dictionary()
 
-    for when in whens:
-        if when in ["今日", "本日"]:
-            target_date = datetime.now().strftime('%Y/%m/%d')
-        elif when in ["明日", "次の日"]:
-            target_date = (datetime.now() + timedelta(1)).strftime('%Y/%m/%d')
-        elif when in "曜":
-            target_date = week[when_value]
+    if when in ["今日", "本日"]:
+        target_date = datetime.now().strftime('%Y/%m/%d')
+    elif when in ["明日", "次の日"]:
+        target_date = (datetime.now() + timedelta(1)).strftime('%Y/%m/%d')
+    elif when in "曜":
+            target_date = week[when]
 
     garbage_type = fetch_garbage_type(district_num, target_date)
 
