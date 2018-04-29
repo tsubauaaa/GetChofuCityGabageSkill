@@ -1,28 +1,26 @@
 from datetime import datetime, timedelta
 
 def lambda_handler(event, context):
+    print(event)
     today = datetime.now().strftime("%Y%m%d")
     tommorow = (datetime.now()+timedelta(1)).strftime("%Y%m%d")
     week = create_week_dictionary()
-    print(week)
-    print(today)
-    print(tommorow)
     intent = event['request']['intent']
     print(intent)
     when = intent['slots']['When']['value']
 
-    gabage = ""
+    garbage = ""
     if when == '今日':
-        gabage = '燃えるゴミの日です。'
+        garbage = '燃えるゴミの日です。'
     elif when == '明日':
-        gabage = '燃えないゴミの日は水曜日です。'
+        garbage = '燃えないゴミの日は水曜日です。'
 
     response = {
         'version': '1.0',
         'response': {
             'outputSpeech': {
                 'type': 'PlainText',
-                'text': gabage
+                'text': garbage
             }
         }
     }
