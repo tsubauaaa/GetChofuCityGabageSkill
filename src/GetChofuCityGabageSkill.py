@@ -4,15 +4,11 @@ from datetime import datetime, timedelta
 
 
 def describe_device_address(api_host, device_id, access_token):
+    endpoint_url = api_host + "/v1/devices/" + device_id + "/settings/address/countryAndPostalCode"
     headers = {"Authorization": "Bearer " + access_token}
-    endpoint = api_host + "/v1/devices/" + device_id + "/settings/address"
-    req = urllib.request.Request(endpoint, headers=headers)
-    response = urllib.request.urlopen(req)
-    if response.getcode() == 200:
-        return json.loads(response.read())
-    else:
-        print(response.getcode())
-        raise Exception(response.msg)
+    req = urllib.request.Request(endpoint_url, headers=headers)
+    res = urllib.request.urlopen(req)
+    return json.loads(res.read())
 
 
 def create_week_dictionary():
@@ -30,9 +26,6 @@ def lambda_handler(event, context):
     device_id = event["context"]["System"]["device"]["deviceId"]
     token = event["context"]["System"]["user"]["permissions"]["consentToken"]
 
-    print(api_host)
-    print(device_id)
-    print(token)
     address = describe_device_address(api_host, device_id, token)
 
     print(address)
