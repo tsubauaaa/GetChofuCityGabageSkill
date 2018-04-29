@@ -4,9 +4,10 @@ from datetime import datetime, timedelta
 
 
 def find_district_number(zip_code):
-    params = {'zipcode': zip_code}
     zipcloud_url = "http://zipcloud.ibsnet.co.jp/api/search"
-    req = urllib.request.Request(zipcloud_url + "?" + urllib.parse.urlencode(params))
+    params = {'zipcode': zip_code}
+    req = urllib.request.Request(
+        zipcloud_url + "?" + urllib.parse.urlencode(params))
     res = urllib.request.urlopen(req)
     addr_data = json.loads(res.read())
     address3 = addr_data['results'][0]['address3']
@@ -15,7 +16,8 @@ def find_district_number(zip_code):
 
 
 def fetch_zip_code(api_host, device_id, access_token):
-    endpoint_url = api_host + "/v1/devices/" + device_id + "/settings/address/countryAndPostalCode"
+    endpoint_url = api_host + "/v1/devices/" + \
+        device_id + "/settings/address/countryAndPostalCode"
     headers = {"Authorization": "Bearer " + access_token}
     req = urllib.request.Request(endpoint_url, headers=headers)
     res = urllib.request.urlopen(req)
@@ -27,8 +29,8 @@ def create_week_dictionary():
     keys = []
     values = []
     for i in range(7):
-        keys.append((datetime.now()+timedelta(i)).weekday())
-        values.append((datetime.now()+timedelta(i)).strftime("%Y%m%d"))
+        keys.append((datetime.now() + timedelta(i)).weekday())
+        values.append((datetime.now() + timedelta(i)).strftime("%Y%m%d"))
     return dict(zip(keys, values))
 
 
@@ -46,16 +48,14 @@ def lambda_handler(event, context):
     if api_endpoint and device_id and token:
         zip_code = fetch_zip_code(api_endpoint, device_id, token)
 
-    print("zipCode:" + zip_code)
-
     district_num = 4
     if zip_code:
         district_num = find_district_number(zip_code)
 
-    print(district_num)
+    print("地区は" + district_num + "です")
 
     today = datetime.now().strftime("%Y%m%d")
-    tommorow = (datetime.now()+timedelta(1)).strftime("%Y%m%d")
+    tommorow = (datetime.now() + timedelta(1)).strftime("%Y%m%d")
     week = create_week_dictionary()
     intent = event['request']['intent']
     print(intent)
