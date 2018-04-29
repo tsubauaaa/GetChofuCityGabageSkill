@@ -52,7 +52,7 @@ def lambda_handler(event, context):
     if zip_code:
         district_num = find_district_number(zip_code)
 
-    print("地区は" + district_num + "です")
+    print("地区は" + str(district_num) + "です")
 
     today = datetime.now().strftime("%Y%m%d")
     tommorow = (datetime.now() + timedelta(1)).strftime("%Y%m%d")
