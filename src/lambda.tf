@@ -7,4 +7,10 @@ resource "aws_lambda_function" "GetChofuCityGabageSkill" {
   runtime          = "python3.6"
   timeout          = 300
   publish          = true
+
+  environment {
+    variables = {
+      BUCKET_NAME = "${var.s3_bucket_name}"
+    }
+  }
 }

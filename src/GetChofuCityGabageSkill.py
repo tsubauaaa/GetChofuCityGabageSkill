@@ -1,6 +1,20 @@
+import boto3
 import json
+import os
 import urllib.request
 from datetime import datetime, timedelta
+
+
+def fetch_garbage_type(district_num, target_date):
+    bucket_name = os.environ['BUCKET_NAME']
+    year_month = target_date[0:8]
+    day = target_date[8:10]
+    key_name = "garbage_calender/district" + \
+        str(district_num) + "/" + year_month + "garbage_calender.csv"
+    s3_client = boto3.client('s3')
+    res = s3_client.get_object(Bucket=bucket_name, Key=key_name)
+    body = res.read()
+    print(body)
 
 
 def find_district_number(zip_code):
@@ -62,20 +76,18 @@ def lambda_handler(event, context):
     if zip_code:
         district_num = find_district_number(zip_code)
 
-    today = datetime.now().strftime("%Y%m%d")
-    tommorow = (datetime.now() + timedelta(1)).strftime("%Y%m%d")
+    today = datetime.now().strftime("%Y/%m/%d")
+    tommorow = (datetime.now() + timedelta(1)).strftime("%Y/%m/%d")
     week = create_week_dictionary()
-    print(event)
     intent = event['request']['intent']
-    print(intent)
     when = intent['slots']['When']['value']
 
     if when == '今日':
-        garbage = '燃えるゴミの日です。'
+        garbage_type = fetch_garbage_type(district_num, today)
     elif when == '明日':
-        garbage = '燃えないゴミの日は水曜日です。'
+        garbage_type = '燃えないゴミ'
 
-    text = "第" + str(district_num) + "地区のごみ出しは" + garbage
+    text = "第" + str(district_num) + "地区のごみ出しは" + garbage_type + "です。"
     response = {
         'version': '1.0',
         'response': {
