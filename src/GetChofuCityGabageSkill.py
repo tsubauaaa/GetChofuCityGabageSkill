@@ -48,7 +48,7 @@ def lambda_handler(event, context):
     if api_endpoint and device_id and token:
         zip_code = fetch_zip_code(api_endpoint, device_id, token)
 
-    district_num = 4
+    district_num = 1
     if zip_code:
         district_num = find_district_number(zip_code)
 
