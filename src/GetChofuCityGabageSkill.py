@@ -11,8 +11,8 @@ def find_district_number(zip_code):
     res = urllib.request.urlopen(req)
     addr_data = json.loads(res.read())
     address3 = addr_data['results'][0]['address3']
-
-    return 1
+    print(address3)
+    return 4
 
 
 def fetch_zip_code(api_host, device_id, access_token):
