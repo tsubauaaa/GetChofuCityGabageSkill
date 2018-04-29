@@ -15,12 +15,8 @@ def fetch_garbage_type(district_num, target_date):
     res = s3_client.get_object(Bucket=bucket_name, Key=key_name)
     garbage_calender = res['Body'].read().decode('utf-8')
     garbage_type = "不明"
-    print(garbage_calender.split('\r\n'))
-    for line in garbage_calender.split('\r\n'):
+    for line in garbage_calender.split('\n'):
         if day == line.split(',')[0]:
-            print(line.split(',')[0])
-            print(line.split(',')[1])
-            print(day)
             garbage_type = line.split(',')[1]
 
     return garbage_type
@@ -63,7 +59,7 @@ def create_week_dictionary():
     values = []
     for i in range(7):
         keys.append((datetime.now() + timedelta(i)).weekday())
-        values.append((datetime.now() + timedelta(i)).strftime("%Y%m%d"))
+        values.append((datetime.now() + timedelta(i)).strftime("%Y/%m/%d"))
     return dict(zip(keys, values))
 
 
@@ -86,14 +82,29 @@ def lambda_handler(event, context):
     if zip_code:
         district_num = find_district_number(zip_code)
 
-    week = create_week_dictionary()
+
     intent = event['request']['intent']
     when = intent['slots']['When']['value']
+    week = create_week_dictionary()
 
     if when == "今日":
         target_date = datetime.now().strftime('%Y/%m/%d')
     elif when == "明日":
         target_date = (datetime.now() + timedelta(1)).strftime('%Y/%m/%d')
+    elif when == "日曜日":
+        target_date = week['0']
+    elif when == "月曜日":
+        target_date = week['1']
+    elif when == "火曜日":
+        target_date = week['2']
+    elif when == "水曜日":
+        target_date = week['3']
+    elif when == "木曜日":
+        target_date = week['4']
+    elif when == "金曜日":
+        target_date = week['5']
+    elif when == "土曜日":
+        target_date = week['6']
 
     garbage_type = fetch_garbage_type(district_num, target_date)
 
