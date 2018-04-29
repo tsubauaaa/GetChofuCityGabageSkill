@@ -21,12 +21,16 @@ def create_week_dictionary():
 
 
 def lambda_handler(event, context):
-    print(event)
-    api_host = event["context"]["System"]["apiEndpoint"]
+    #try:
+    api_endpoint = event["context"]["System"]["apiEndpoint"]
     device_id = event["context"]["System"]["device"]["deviceId"]
     token = event["context"]["System"]["user"]["permissions"]["consentToken"]
+    #except:
+    #    api_endpoint = None
+    #    device_id = None
+    #    token = None
 
-    address = describe_device_address(api_host, device_id, token)
+    address = describe_device_address(api_endpoint, device_id, token)
 
     print(address)
 
