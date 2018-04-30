@@ -13,10 +13,10 @@ phases:
       - cd ${CODEBUILD_SRC_DIR}/src
       - zip -X -J -r GetChofuCityGabageSkill.zip . -x '*.tf' '*pyc'
       - terraform init -backend-config bucket=${s3_bucket}
-      - terraform plan -var-file=terraform.tfvars -var 'aws_account_id=`aws sts get-caller-identity --query 'Account' --output text`'
+      - terraform plan -var-file=terraform.tfvars -var aws_account_id=`aws sts get-caller-identity --query 'Account' --output text`
   build:
     commands:
-      - terraform apply -auto-approve -var-file=terraform.tfvars -var 'aws_account_id=`aws sts get-caller-identity --query 'Account' --output text`'
+      - terraform apply -auto-approve -var-file=terraform.tfvars -var aws_account_id=`aws sts get-caller-identity --query 'Account' --output text`
   post_build:
     commands:
       - echo Build completed on `date`
