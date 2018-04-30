@@ -43,8 +43,8 @@ def find_district_number(zip_code):
         district_num = 3
     elif address3 in {"調布ケ丘", "柴崎", "多摩川", "下石原", "八雲台", "佐須町", "小島町"}:
         district_num = 4
-    # TODO:調布市じゃない場合をちゃんと検討する
     else:
+        # 調布市じゃない場合は第一地区とする
         district_num = 1
 
     return district_num
@@ -88,6 +88,7 @@ def lambda_handler(event, context):
     if api_endpoint and device_id and token:
         zip_code = fetch_zip_code(api_endpoint, device_id, token)
 
+    # スキルに端末の国と郵便番号の権限を許可していない場合は第一地区とする
     district_num = 1
     if zip_code:
         district_num = find_district_number(zip_code)
