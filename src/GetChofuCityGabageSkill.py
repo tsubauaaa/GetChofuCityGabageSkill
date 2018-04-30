@@ -1,16 +1,20 @@
 import boto3
 import json
+import logging
 import os
 import urllib.request
 from datetime import datetime, timedelta
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def fetch_garbage_type(district_num, target_date):
     bucket_name = os.environ['BUCKET_NAME']
     year_month = target_date[0:8]
     day = target_date[8:10]
-    key_name = "garbage_calender/district" + \
-        str(district_num) + "/" + year_month + "garbage_calender.csv"
+    key_name = "garbage_calender/district{}/{}garbage_calender.csv".format(
+        str(district_num), year_month)
     s3_client = boto3.client('s3')
     res = s3_client.get_object(Bucket=bucket_name, Key=key_name)
     garbage_calender = res['Body'].read().decode('utf-8')
@@ -39,18 +43,21 @@ def find_district_number(zip_code):
         district_num = 3
     elif address3 in {"調布ケ丘", "柴崎", "多摩川", "下石原", "八雲台", "佐須町", "小島町"}:
         district_num = 4
+    # TODO:調布市じゃない場合をちゃんと検討する
     else:
         district_num = 1
+
     return district_num
 
 
 def fetch_zip_code(api_host, device_id, access_token):
-    endpoint_url = api_host + "/v1/devices/" + \
-        device_id + "/settings/address/countryAndPostalCode"
-    headers = {"Authorization": "Bearer " + access_token}
+    endpoint_url = "{}/v1/devices/{}/settings/address/countryAndPostalCode".format(
+        api_host, device_id)
+    headers = {"Authorization": "Bearer {}".format(access_token)}
     req = urllib.request.Request(endpoint_url, headers=headers)
     res = urllib.request.urlopen(req)
     addr_data = json.loads(res.read())
+
     return addr_data['postalCode'].replace('-', '')
 
 
@@ -61,15 +68,17 @@ def create_week_dictionary():
     for i in range(7):
         keys.append(day_week[(datetime.now() + timedelta(i)).weekday()])
         values.append((datetime.now() + timedelta(i)).strftime("%Y/%m/%d"))
+
     return dict(zip(keys, values))
 
 
 def lambda_handler(event, context):
-    print(event)
+    logger.info("got event{}".format(event))
     try:
         api_endpoint = event['context']['System']['apiEndpoint']
         device_id = event['context']['System']['device']['deviceId']
-        token = event['context']['System']['user']['permissions']['consentToken']
+        token = event['context']['System']['user']['permissions'][
+            'consentToken']
     except KeyError:
         api_endpoint = None
         device_id = None
@@ -83,8 +92,11 @@ def lambda_handler(event, context):
     if zip_code:
         district_num = find_district_number(zip_code)
 
+    logger.info("got When{}".format(
+        event['request']['intent']['slots']['When']))
     when_value = event['request']['intent']['slots']['When']['value']
-    when_resol_value = event['request']['intent']['slots']['When']['resolutions']['resolutionsPerAuthority'][0]['values'][0]['value']
+    when_resol_value = event['request']['intent']['slots']['When'][
+        'resolutions']['resolutionsPerAuthority'][0]['values'][0]['value']
     when_resol_name = when_resol_value['name']
     when_resol_id = when_resol_value['id']
     week = create_week_dictionary()
@@ -98,7 +110,8 @@ def lambda_handler(event, context):
 
     garbage_type = fetch_garbage_type(district_num, target_date)
 
-    text = when_value + "の第" + str(district_num) + "地区のごみ出しは" + garbage_type + "です。"
+    text = "{}の第{}地区のごみ出しは{}です。".format(
+        when_value, str(district_num), garbage_type)
     response = {
         'version': '1.0',
         'response': {
