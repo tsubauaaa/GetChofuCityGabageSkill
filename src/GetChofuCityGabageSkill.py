@@ -91,7 +91,7 @@ def lambda_handler(event, context):
 
     if when_resol_id == "today":
         target_date = datetime.now().strftime('%Y/%m/%d')
-    elif when_resol_id == "tommorow":
+    elif when_resol_id == "tomorrow":
         target_date = (datetime.now() + timedelta(1)).strftime('%Y/%m/%d')
     elif when_resol_id.split("-")[0] == "dayofweek":
         target_date = week[when_resol_name]
