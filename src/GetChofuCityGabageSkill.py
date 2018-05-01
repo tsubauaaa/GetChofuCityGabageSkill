@@ -9,6 +9,41 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
+def create_response(text):
+    return {
+        'version': '1.0',
+        'response': {
+            'outputSpeech': {
+                'type': 'PlainText',
+                'text': text
+            }
+        }
+    }
+
+
+def create_week_dictionary():
+    day_week = ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"]
+    keys = []
+    values = []
+    for i in range(7):
+        keys.append(day_week[(datetime.now() + timedelta(i)).weekday()])
+        values.append((datetime.now() + timedelta(i)).strftime("%Y/%m/%d"))
+
+    return dict(zip(keys, values))
+
+
+def find_target_date(when_id, when_name):
+    if when_id == "today":
+        target_date = datetime.now().strftime('%Y/%m/%d')
+    elif when_id == "tomorrow":
+        target_date = (datetime.now() + timedelta(1)).strftime('%Y/%m/%d')
+    elif when_id.split("-")[0] == "dayofweek":
+        week = create_week_dictionary()
+        target_date = week[when_name]
+
+    return target_date
+
+
 def fetch_garbage_type(district_num, target_date):
     bucket_name = os.environ['BUCKET_NAME']
     year_month = target_date[0:8]
@@ -18,7 +53,6 @@ def fetch_garbage_type(district_num, target_date):
     s3_client = boto3.client('s3')
     res = s3_client.get_object(Bucket=bucket_name, Key=key_name)
     garbage_calender = res['Body'].read().decode('utf-8')
-    garbage_type = "不明"
     for line in garbage_calender.split("\n"):
         if day == line.split(",")[0]:
             garbage_type = line.split(",")[1]
@@ -61,17 +95,6 @@ def fetch_zip_code(api_host, device_id, access_token):
     return addr_data['postalCode'].replace('-', '')
 
 
-def create_week_dictionary():
-    day_week = ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"]
-    keys = []
-    values = []
-    for i in range(7):
-        keys.append(day_week[(datetime.now() + timedelta(i)).weekday()])
-        values.append((datetime.now() + timedelta(i)).strftime("%Y/%m/%d"))
-
-    return dict(zip(keys, values))
-
-
 def lambda_handler(event, context):
     logger.info("got event{}".format(event))
     try:
@@ -84,42 +107,26 @@ def lambda_handler(event, context):
         device_id = None
         token = None
 
-    zip_code = None
     if api_endpoint and device_id and token:
         zip_code = fetch_zip_code(api_endpoint, device_id, token)
-
-    # スキルに端末の国と郵便番号の権限を許可していない場合は第一地区とする
-    district_num = 1
-    if zip_code:
         district_num = find_district_number(zip_code)
+    else:
+        # スキルに端末の国と郵便番号の権限を許可していない場合は第一地区とする
+        district_num = 1
 
     logger.info("got When{}".format(
         event['request']['intent']['slots']['When']))
     when_value = event['request']['intent']['slots']['When']['value']
-    when_resol_value = event['request']['intent']['slots']['When'][
-        'resolutions']['resolutionsPerAuthority'][0]['values'][0]['value']
-    when_resol_name = when_resol_value['name']
-    when_resol_id = when_resol_value['id']
-    week = create_week_dictionary()
+    try:
+        when_resol_value = event['request']['intent']['slots']['When'][
+            'resolutions']['resolutionsPerAuthority'][0]['values'][0]['value']
+        when_resol_name = when_resol_value['name']
+        when_resol_id = when_resol_value['id']
+    except KeyError:
+        return create_response("いつのごみが知りたいかが分かりませんでした。")
 
-    if when_resol_id == "today":
-        target_date = datetime.now().strftime('%Y/%m/%d')
-    elif when_resol_id == "tomorrow":
-        target_date = (datetime.now() + timedelta(1)).strftime('%Y/%m/%d')
-    elif when_resol_id.split("-")[0] == "dayofweek":
-        target_date = week[when_resol_name]
-
+    target_date = find_target_date(when_resol_id, when_resol_name)
     garbage_type = fetch_garbage_type(district_num, target_date)
 
-    text = "{}の第{}地区のごみ出しは{}です。".format(
-        when_value, str(district_num), garbage_type)
-    response = {
-        'version': '1.0',
-        'response': {
-            'outputSpeech': {
-                'type': 'PlainText',
-                'text': text
-            }
-        }
-    }
-    return response
+    return create_response("{}の第{}地区のごみ出しは{}です。".format(
+        when_value, str(district_num), garbage_type))
