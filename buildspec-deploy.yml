@@ -16,6 +16,7 @@ phases:
       - terraform plan -var-file=terraform.tfvars -var aws_account_id=`aws sts get-caller-identity --query 'Account' --output text`
   build:
     commands:
+      - aws s3 sync ../files s3://${s3_bucket}/garbage_calender
       - terraform apply -auto-approve -var-file=terraform.tfvars -var aws_account_id=`aws sts get-caller-identity --query 'Account' --output text`
   post_build:
     commands:
