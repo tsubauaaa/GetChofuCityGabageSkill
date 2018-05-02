@@ -115,16 +115,12 @@ def on_launch():
         output_text, reprompt_text, should_end_session))
 
 
-def lambda_handler(event, context):
-    logger.info("got event{}".format(event))
-    if event['request']['type'] == "LaunchRequest":
-        return on_launch()
-
+def on_intent(context_system, request_intent):
+    # TODO: api_endpoint&device_id&tokenがあるかどうかチェックする関数を作る
     try:
-        api_endpoint = event['context']['System']['apiEndpoint']
-        device_id = event['context']['System']['device']['deviceId']
-        token = event['context']['System']['user']['permissions'][
-            'consentToken']
+        api_endpoint = context_system['apiEndpoint']
+        device_id = context_system['device']['deviceId']
+        token = context_system['user']['permissions']['consentToken']
     except KeyError:
         api_endpoint = None
         device_id = None
@@ -137,11 +133,10 @@ def lambda_handler(event, context):
         # スキルに端末の国と郵便番号の権限を許可していない場合は第一地区とする
         district_num = 1
 
-    logger.info("got When{}".format(
-        event['request']['intent']['slots']['When']))
-    when_value = event['request']['intent']['slots']['When']['value']
+    logger.info("got When{}".format(request_intent['slots']['When']))
+    when_value = request_intent['slots']['When']['value']
     try:
-        when_resol_value = event['request']['intent']['slots']['When'][
+        when_resol_value = request_intent['slots']['When'][
             'resolutions']['resolutionsPerAuthority'][0]['values'][0]['value']
         when_resol_name = when_resol_value['name']
         when_resol_id = when_resol_value['id']
@@ -154,3 +149,15 @@ def lambda_handler(event, context):
 
     return create_all_response(create_response("{}の第{}地区のごみ出しは{}です。".format(
         when_value, str(district_num), garbage_type), None, True))
+
+
+def lambda_handler(event, context):
+    logger.info("got event{}".format(event))
+
+    if event['request']['type'] == "LaunchRequest":
+        return on_launch()
+    elif event['request']['type'] == "IntentRequest":
+        return on_intent(
+            event['context']['System'], event['request']['intent'])
+    elif event['request']['type'] == "SessionEndedRequest":
+        return
