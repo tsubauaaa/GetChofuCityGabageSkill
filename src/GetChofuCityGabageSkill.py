@@ -9,15 +9,26 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def create_response(text):
+def create_all_response(response):
     return {
         'version': '1.0',
-        'response': {
+        'response': response
+    }
+
+
+def create_response(output_text, reprompt_text, should_end_session):
+    return {
+        'outputSpeech': {
+            'type': 'PlainText',
+            'text': output_text
+        },
+        'reprompt': {
             'outputSpeech': {
                 'type': 'PlainText',
-                'text': text
+                'text': reprompt_text
             }
-        }
+        },
+        'shouldEndSession': should_end_session
     }
 
 
@@ -95,8 +106,20 @@ def fetch_zip_code(api_host, device_id, access_token):
     return addr_data['postalCode'].replace('-', '')
 
 
+def on_launch():
+    output_text = "ようこそ、調布市のゴミの日スキルへ。知りたいゴミの日はいつですか？"
+    reprompt_text = "知りたい調布市のゴミの日はいつですか？"
+    should_end_session = False
+
+    return create_all_response(create_response(
+        output_text, reprompt_text, should_end_session))
+
+
 def lambda_handler(event, context):
     logger.info("got event{}".format(event))
+    if event['request']['type'] == "LaunchRequest":
+        return on_launch()
+
     try:
         api_endpoint = event['context']['System']['apiEndpoint']
         device_id = event['context']['System']['device']['deviceId']
@@ -123,10 +146,11 @@ def lambda_handler(event, context):
         when_resol_name = when_resol_value['name']
         when_resol_id = when_resol_value['id']
     except KeyError:
-        return create_response("いつのごみが知りたいかが分かりませんでした。")
+        return create_all_response(create_response(
+            "いつのごみが知りたいかが分かりませんでした。もう一度、いつのごみが知りたいかを教えてください。", None, False))
 
     target_date = find_target_date(when_resol_id, when_resol_name)
     garbage_type = fetch_garbage_type(district_num, target_date)
 
-    return create_response("{}の第{}地区のごみ出しは{}です。".format(
-        when_value, str(district_num), garbage_type))
+    return create_all_response(create_response("{}の第{}地区のごみ出しは{}です。".format(
+        when_value, str(district_num), garbage_type), None, True))
