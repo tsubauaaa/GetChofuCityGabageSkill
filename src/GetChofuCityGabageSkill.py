@@ -72,6 +72,7 @@ def fetch_garbage_type(district_num, target_date):
 
 
 def find_district_number(zip_code):
+    # TODO: zipcloud_urlを環境変数化する
     zipcloud_url = "http://zipcloud.ibsnet.co.jp/api/search"
     params = {'zipcode': zip_code}
     req = urllib.request.Request(
@@ -107,11 +108,8 @@ def fetch_zip_code(api_host, device_id, access_token):
 
 
 def on_launch():
-    output_text = "ようこそ、調布市のゴミの日スキルへ。知りたいゴミの日はいつですか？"
-    reprompt_text = "知りたい調布市のゴミの日はいつですか？"
-
     return create_all_response(create_response(
-        output_text, reprompt_text, False))
+        "ようこそ、調布市のゴミの日スキルへ。知りたいゴミの日はいつですか？", "知りたい調布市のゴミの日はいつですか？", False))
 
 
 def on_session_ended():
@@ -136,22 +134,27 @@ def on_intent(context_system, request_intent):
         # スキルに端末の国と郵便番号の権限を許可していない場合は第一地区とする
         district_num = 1
 
-    logger.info("got When{}".format(request_intent['slots']['When']))
-    when_value = request_intent['slots']['When']['value']
-    try:
-        when_resol_value = request_intent['slots']['When'][
-            'resolutions']['resolutionsPerAuthority'][0]['values'][0]['value']
-        when_resol_name = when_resol_value['name']
-        when_resol_id = when_resol_value['id']
-    except KeyError:
-        return create_all_response(create_response(
-            "いつのごみが知りたいかが分かりませんでした。もう一度、いつのごみが知りたいかを教えてください。", None, False))
+    intent_name = request_intent['name']
+    if intent_name == "GetChofuCityGabageIntent":
+        logger.info("got When{}".format(request_intent['slots']['When']))
+        when_value = request_intent['slots']['When']['value']
+        try:
+            when_resol_value = request_intent['slots']['When'][
+                'resolutions']['resolutionsPerAuthority'][0]['values'][0]['value']
+            when_resol_name = when_resol_value['name']
+            when_resol_id = when_resol_value['id']
+        except KeyError:
+            return create_all_response(create_response(
+                "いつのごみが知りたいかが分かりませんでした。もう一度、いつのごみが知りたいかを教えてください。", None, False))
 
-    target_date = find_target_date(when_resol_id, when_resol_name)
-    garbage_type = fetch_garbage_type(district_num, target_date)
+        target_date = find_target_date(when_resol_id, when_resol_name)
+        garbage_type = fetch_garbage_type(district_num, target_date)
 
-    return create_all_response(create_response("{}の第{}地区のごみ出しは{}です。".format(
-        when_value, str(district_num), garbage_type), None, True))
+        return create_all_response(
+            create_response("{}の第{}地区のごみ出しは{}です。".format(
+                when_value, str(district_num), garbage_type), None, True))
+    else:
+        raise ValueError("Invalid intent")
 
 
 def lambda_handler(event, context):
