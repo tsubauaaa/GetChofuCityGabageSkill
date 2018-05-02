@@ -109,10 +109,13 @@ def fetch_zip_code(api_host, device_id, access_token):
 def on_launch():
     output_text = "ようこそ、調布市のゴミの日スキルへ。知りたいゴミの日はいつですか？"
     reprompt_text = "知りたい調布市のゴミの日はいつですか？"
-    should_end_session = False
 
     return create_all_response(create_response(
-        output_text, reprompt_text, should_end_session))
+        output_text, reprompt_text, False))
+
+
+def on_session_ended():
+    return create_all_response(create_response("終わります。", None, True))
 
 
 def on_intent(context_system, request_intent):
@@ -160,4 +163,4 @@ def lambda_handler(event, context):
         return on_intent(
             event['context']['System'], event['request']['intent'])
     elif event['request']['type'] == "SessionEndedRequest":
-        return
+        return on_session_ended()
