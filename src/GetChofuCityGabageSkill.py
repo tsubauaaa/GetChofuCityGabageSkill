@@ -90,8 +90,8 @@ def find_district_number(zip_code):
     elif address3 in {"調布ケ丘", "柴崎", "多摩川", "下石原", "八雲台", "佐須町", "小島町"}:
         district_num = 4
     else:
-        # TODO: ロケーションAPIを有効するようにメッセージを返さなければならない
-        #       現状はスキルに端末の国と郵便番号の権限を許可していない場合は第一地区としている
+        # TODO: 調布市以外はスキルが対応していない旨のメッセージを返さなければならない
+        #       現状はユーザが調布市ではない場合は第一地区としている
         district_num = 1
 
     return district_num
@@ -144,7 +144,7 @@ def on_intent(context_system, intent_request):
             context_system['user']['permissions']['consentToken'])
         district_num = find_district_number(zip_code)
     else:
-        # TODO: ロケーションAPIを有効するようにメッセージを返さなければならない
+        # TODO: ロケーションAPIを有効にするように促すメッセージを返さなければならない
         #       現状はスキルに端末の国と郵便番号の権限を許可していない場合は第一地区としている
         district_num = 1
     intent_name = intent_request['intent']['name']
