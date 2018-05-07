@@ -117,7 +117,9 @@ def on_session_ended():
 
 
 def is_allowed_location_api(context_system):
-    if context_system.get('apiEndpoint') and context_system['device'].get('deviceId') and context_system['user']['permissions'].get('consentToken'):
+    if context_system.get('apiEndpoint') \
+            and context_system['device'].get('deviceId') \
+            and context_system['user'].get('permissions'):
         return True
     else:
         return False
