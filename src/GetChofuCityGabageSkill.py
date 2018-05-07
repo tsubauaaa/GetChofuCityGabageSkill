@@ -120,7 +120,8 @@ def on_launch(launch_request):
 
 def on_session_ended(sessionended_request):
     logger.info("on_session_ended got request{}".format(sessionended_request))
-    return create_all_response(create_response("さようなら。", None, True))
+    if sessionended_request['type'] != "SessionEndedRequest":
+        return create_all_response(create_response("さようなら。", None, True))
 
 
 def is_allowed_location_api(context_system):
