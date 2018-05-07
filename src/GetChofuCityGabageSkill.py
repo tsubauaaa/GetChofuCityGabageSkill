@@ -83,7 +83,8 @@ def find_district_number(zip_code):
 
     if address3 in {"仙川町", "入間町", "若葉町", "緑ケ丘", "国領町"}:
         district_num = 1
-    elif address3 in {"西つつじケ丘", "菊野台", "飛田給", "上石原", "東つつじケ丘", "富士見町", "野水", "西町"}:
+    elif address3 \
+            in {"西つつじケ丘", "菊野台", "飛田給", "上石原", "東つつじケ丘", "富士見町", "野水", "西町"}:
         district_num = 2
     elif address3 in {"深大寺東町", "深大寺元町", "布田", "深大寺北町", "深大寺南町", "染地"}:
         district_num = 3
@@ -97,7 +98,8 @@ def find_district_number(zip_code):
 
 
 def fetch_zip_code(api_host, device_id, access_token):
-    endpoint_url = "{}/v1/devices/{}/settings/address/countryAndPostalCode".format(
+    endpoint_url = "{}/v1/devices/{}/\
+        settings/address/countryAndPostalCode".format(
         api_host, device_id)
     headers = {"Authorization": "Bearer {}".format(access_token)}
     req = urllib.request.Request(endpoint_url, headers=headers)
@@ -107,12 +109,18 @@ def fetch_zip_code(api_host, device_id, access_token):
     return addr_data['postalCode'].replace('-', '')
 
 
-def on_launch():
+def get_welcome_response():
     return create_all_response(create_response(
-        "ようこそ、調布市のゴミの日スキルへ。知りたいゴミの日はいつですか？", "知りたい調布市のゴミの日はいつですか？", False))
+        "ようこそ、調布市のゴミの日スキルへ。知りたい調布市のゴミの日はいつですか？", "知りたい調布市のゴミの日はいつですか？", False))
+
+
+def on_launch():
+    # TODO: ログ出力
+    return get_welcome_response()
 
 
 def on_session_ended():
+    # TODO: ログ出力
     return create_all_response(create_response("終わります。", None, True))
 
 
@@ -126,7 +134,7 @@ def is_allowed_location_api(context_system):
 
 
 def on_intent(context_system, request_intent):
-    # TODO: api_endpoint&device_id&tokenがあるかどうかチェックする関数を作る
+    # TODO: ログ出力
 
     if is_allowed_location_api(context_system):
         zip_code = fetch_zip_code(
@@ -139,18 +147,21 @@ def on_intent(context_system, request_intent):
         # スキルに端末の国と郵便番号の権限を許可していない場合は第一地区とする
         district_num = 1
 
+    # TODO: ユーザによる終了のケース、AMAZON.StopIntentまたはSessionEndedRequestの場合の処理を追加
     intent_name = request_intent['name']
     if intent_name == "GetChofuCityGabageIntent":
         logger.info("got When{}".format(request_intent['slots']['When']))
         when_value = request_intent['slots']['When']['value']
         try:
             when_resol_value = request_intent['slots']['When'][
-                'resolutions']['resolutionsPerAuthority'][0]['values'][0]['value']
+                'resolutions']['resolutionsPerAuthority'][0][
+                'values'][0]['value']
             when_resol_name = when_resol_value['name']
             when_resol_id = when_resol_value['id']
         except KeyError:
             return create_all_response(create_response(
-                "いつのごみが知りたいかが分かりませんでした。もう一度、いつのごみが知りたいかを教えてください。", None, False))
+                "いつのごみが知りたいかが分かりませんでした。\
+                もう一度、いつのごみが知りたいかを教えてください。", None, False))
 
         target_date = find_target_date(when_resol_id, when_resol_name)
         garbage_type = fetch_garbage_type(district_num, target_date)
@@ -158,11 +169,14 @@ def on_intent(context_system, request_intent):
         return create_all_response(
             create_response("{}の第{}地区のごみ出しは{}です。".format(
                 when_value, str(district_num), garbage_type), None, True))
+    elif intent_name == "AMAZON.HelpIntent":
+        return get_welcome_response()
     else:
         raise ValueError("Invalid intent")
 
 
 def lambda_handler(event, context):
+    # TODO: ログ出力内容を修正
     logger.info("got event{}".format(event))
 
     if event['request']['type'] == "LaunchRequest":
@@ -171,4 +185,6 @@ def lambda_handler(event, context):
         return on_intent(
             event['context']['System'], event['request']['intent'])
     elif event['request']['type'] == "SessionEndedRequest":
+        # 明示的にセッションを終了させてはいないが、セッションが終了してしまった場合、
+        # スキルからはレスポンスを返さない
         return on_session_ended()
