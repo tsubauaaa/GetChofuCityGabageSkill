@@ -116,21 +116,24 @@ def on_session_ended():
     return create_all_response(create_response("終わります。", None, True))
 
 
+def is_allowed_location_api(context_system):
+    if context_system.get('apiEndpoint') and context_system['device'].get('deviceId') and context_system['user']['permissions'].get('consentToken'):
+        return True
+    else:
+        return False
+
+
 def on_intent(context_system, request_intent):
     # TODO: api_endpoint&device_id&tokenがあるかどうかチェックする関数を作る
-    try:
-        api_endpoint = context_system['apiEndpoint']
-        device_id = context_system['device']['deviceId']
-        token = context_system['user']['permissions']['consentToken']
-    except KeyError:
-        api_endpoint = None
-        device_id = None
-        token = None
 
-    if api_endpoint and device_id and token:
-        zip_code = fetch_zip_code(api_endpoint, device_id, token)
+    if is_allowed_location_api(context_system):
+        zip_code = fetch_zip_code(
+            context_system['apiEndpoint'],
+            context_system['device']['deviceId'],
+            context_system['user']['permissions']['consentToken'])
         district_num = find_district_number(zip_code)
     else:
+        # TODO: ロケーションAPIを有効するようにメッセージを返さなければならない
         # スキルに端末の国と郵便番号の権限を許可していない場合は第一地区とする
         district_num = 1
 
