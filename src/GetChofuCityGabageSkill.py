@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+# TODO: 関数の並び順を最適化する
+
 
 def create_all_response(response):
     return {
@@ -121,6 +123,7 @@ def on_launch(launch_request):
 
 def on_session_ended(sessionended_request):
     logger.info("on_session_ended got request{}".format(sessionended_request))
+    """ ユーザが明示的にではなく、セッションが終了した場合、スキルからはレスポンスを返せない """
     if sessionended_request['type'] != "SessionEndedRequest":
         return create_all_response(create_response("さようなら。", None, True))
 
@@ -152,6 +155,7 @@ def on_intent(context_system, intent_request):
         logger.info("got When{}".format(intent_request[
                     'intent']['slots']['When']))
         when_value = intent_request['intent']['slots']['When']['value']
+        # TODO: try - exceptまたはifのどちらで判定するか最適化する
         try:
             when_resol_value = intent_request['intent']['slots']['When'][
                 'resolutions']['resolutionsPerAuthority'][0][
@@ -187,6 +191,4 @@ def lambda_handler(event, context):
         return on_intent(
             event['context']['System'], event['request'])
     elif event['request']['type'] == "SessionEndedRequest":
-        # 明示的にセッションを終了させてはいないが、セッションが終了してしまった場合、
-        # スキルからはレスポンスを返さない
         return on_session_ended(event['request'])
