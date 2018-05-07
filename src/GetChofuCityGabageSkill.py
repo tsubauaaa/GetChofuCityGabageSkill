@@ -90,7 +90,8 @@ def find_district_number(zip_code):
     elif address3 in {"調布ケ丘", "柴崎", "多摩川", "下石原", "八雲台", "佐須町", "小島町"}:
         district_num = 4
     else:
-        # 調布市じゃない場合は第一地区とする
+        # TODO: ロケーションAPIを有効するようにメッセージを返さなければならない
+        #       現状はスキルに端末の国と郵便番号の権限を許可していない場合は第一地区としている
         district_num = 1
 
     return district_num
