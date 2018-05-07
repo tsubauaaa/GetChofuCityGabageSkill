@@ -145,8 +145,6 @@ def on_intent(context_system, intent_request):
         # TODO: ロケーションAPIを有効するようにメッセージを返さなければならない
         #       現状はスキルに端末の国と郵便番号の権限を許可していない場合は第一地区としている
         district_num = 1
-
-    # TODO: ユーザによる終了のケース、AMAZON.StopIntentまたはSessionEndedRequestの場合の処理を追加
     intent_name = intent_request['intent']['name']
     if intent_name == "GetChofuCityGabageIntent":
         logger.info("got When{}".format(intent_request[
@@ -161,7 +159,7 @@ def on_intent(context_system, intent_request):
         except KeyError:
             return create_all_response(create_response(
                 "いつのごみが知りたいかが分かりませんでした。\
-                もう一度、いつのごみが知りたいかを教えてください。", None, False))
+                もう一度、いつのごみが知りたいかを今日、あした、曜日で訊いてください。", None, False))
 
         target_date = find_target_date(when_resol_id, when_resol_name)
         garbage_type = fetch_garbage_type(district_num, target_date)
@@ -171,6 +169,9 @@ def on_intent(context_system, intent_request):
                 when_value, str(district_num), garbage_type), None, True))
     elif intent_name == "AMAZON.HelpIntent":
         return get_welcome_response()
+    elif intent_name == "AMAZON.CancelIntent" \
+                        or intent_name == "AMAZON.StopIntent":
+        return on_session_ended(intent_request)
     else:
         raise ValueError("Invalid intent")
 
