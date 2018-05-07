@@ -72,8 +72,7 @@ def fetch_garbage_type(district_num, target_date):
 
 
 def find_district_number(zip_code):
-    # TODO: zipcloud_urlを環境変数化する
-    zipcloud_url = "http://zipcloud.ibsnet.co.jp/api/search"
+    zipcloud_url = os.environ['ZIPCLOUD_URL']
     params = {'zipcode': zip_code}
     req = urllib.request.Request(
         zipcloud_url + "?" + urllib.parse.urlencode(params))

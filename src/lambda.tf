@@ -10,8 +10,9 @@ resource "aws_lambda_function" "GetChofuCityGabageSkill" {
 
   environment {
     variables = {
-      BUCKET_NAME = "${var.s3_bucket_name}"
-      TZ          = "Asia/Tokyo"
+      BUCKET_NAME  = "${var.s3_bucket_name}"
+      ZIPCLOUD_URL = "http://zipcloud.ibsnet.co.jp/api/search"
+      TZ           = "Asia/Tokyo"
     }
   }
 }
