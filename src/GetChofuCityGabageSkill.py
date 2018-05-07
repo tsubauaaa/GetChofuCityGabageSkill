@@ -98,11 +98,10 @@ def find_district_number(zip_code):
 
 
 def fetch_zip_code(api_host, device_id, access_token):
-    endpoint_url = "{}/v1/devices/{}/\
-        settings/address/countryAndPostalCode".format(
+    url = "{}/v1/devices/{}/settings/address/countryAndPostalCode".format(
         api_host, device_id)
     headers = {"Authorization": "Bearer {}".format(access_token)}
-    req = urllib.request.Request(endpoint_url, headers=headers)
+    req = urllib.request.Request(url, headers=headers)
     res = urllib.request.urlopen(req)
     addr_data = json.loads(res.read())
 
