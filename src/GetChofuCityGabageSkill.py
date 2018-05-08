@@ -9,6 +9,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # TODO: 関数の並び順を最適化する
+# TODO: 関数の説明コメントを追加する
 
 
 def create_all_response(response):
