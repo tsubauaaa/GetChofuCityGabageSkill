@@ -114,7 +114,7 @@ def find_district_number(zip_code):
     elif address3 in {"調布ケ丘", "柴崎", "多摩川", "下石原", "八雲台", "佐須町", "小島町"}:
         district_num = 4
     else:
-        create_all_response(create_response(
+        return create_all_response(create_response(
             "{}は調布市ではないため、スキルは対応していません。調布市内でお使いください。".format(
                 address3), False, None, True))
     return district_num
@@ -163,16 +163,14 @@ def on_intent(context_system, intent_request):
     logger.info("on_launch got request{}".format(intent_request))
 
     if is_allowed_location_api(context_system):
-        needs_card = True
         zip_code = fetch_zip_code(
             context_system['apiEndpoint'],
             context_system['device']['deviceId'],
             context_system['user']['permissions']['consentToken'])
         district_num = find_district_number(zip_code)
     else:
-        needs_card = False
-        create_all_response(create_response(
-            "スキルに端末の国と郵便番号のアクセス権を許可してください。", needs_card, None, True))
+        return create_all_response(create_response(
+            "スキルに端末の国と郵便番号のアクセス権を許可してください。", True, None, True))
     intent_name = intent_request['intent']['name']
     if intent_name == "GetChofuCityGabageIntent":
         logger.info("got When{}".format(intent_request[
@@ -188,7 +186,7 @@ def on_intent(context_system, intent_request):
         except KeyError:
             return create_all_response(create_response(
                 "いつのごみが知りたいかが分かりませんでした。もう一度、いつのごみが知りたいかを今日、あした、曜日で訊いてください。",
-                needs_card, None, False))
+                False, None, False))
 
         target_date = find_target_date(when_resol_id, when_resol_name)
         garbage_type = fetch_garbage_type(district_num, target_date)
@@ -196,7 +194,7 @@ def on_intent(context_system, intent_request):
         return create_all_response(
             create_response("{}の第{}地区のごみ出しは{}です。".format(
                 when_value, str(district_num), garbage_type),
-                needs_card, None, True))
+                False, None, True))
     elif intent_name == "AMAZON.HelpIntent":
         return get_welcome_response()
     elif intent_name == "AMAZON.CancelIntent" \
