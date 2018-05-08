@@ -49,7 +49,7 @@ def create_response_containing_card(output_speech, reprompt,
         'cards': {
             'type': 'AskForPermissionsConsent',
             'permissions': [
-                    'read::alexa:device:all:address'
+                    'read::alexa:device:all:address:country_and_postal_code'
             ]
         },
         'reprompt': reprompt,
