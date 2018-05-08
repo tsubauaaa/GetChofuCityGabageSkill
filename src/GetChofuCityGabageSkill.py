@@ -18,18 +18,40 @@ def create_all_response(response):
     }
 
 
-def create_response(output_text, reprompt_text, should_end_session):
-    return {
+def create_response(output_text, needs_card, reprompt_text,
+                    should_end_session):
+    output_speech = {
+        'type': 'PlainText',
+        'text': output_text
+    }
+    reprompt = {
         'outputSpeech': {
             'type': 'PlainText',
-            'text': output_text
+            'text': reprompt_text
+        }
+    }
+    if not needs_card:
+        return {
+            'outputSpeech': output_speech,
+            'reprompt': reprompt,
+            'shouldEndSession': should_end_session
+        }
+    else:
+        return create_response_containing_card(output_speech, reprompt,
+                                               should_end_session)
+
+
+def create_response_containing_card(output_speech, reprompt,
+                                    should_end_session):
+    return {
+        'outputSpeech': output_speech,
+        'cards': {
+            'type': 'AskForPermissionsConsent',
+            'permissions': [
+                    'read::alexa:device:all:address'
+            ]
         },
-        'reprompt': {
-            'outputSpeech': {
-                'type': 'PlainText',
-                'text': reprompt_text
-            }
-        },
+        'reprompt': reprompt,
         'shouldEndSession': should_end_session
     }
 
@@ -92,10 +114,9 @@ def find_district_number(zip_code):
     elif address3 in {"調布ケ丘", "柴崎", "多摩川", "下石原", "八雲台", "佐須町", "小島町"}:
         district_num = 4
     else:
-        # TODO: 調布市以外はスキルが対応していない旨のメッセージを返さなければならない
-        #       現状はユーザが調布市ではない場合は第一地区としている
-        district_num = 1
-
+        create_all_response(create_response(
+            "{}は調布市ではないため、スキルは対応していません。調布市内でお使いください。".format(
+                address3), False, None, True))
     return district_num
 
 
@@ -113,7 +134,7 @@ def fetch_zip_code(api_host, device_id, access_token):
 def get_welcome_response():
     return create_all_response(create_response(
         "ようこそ、調布市のゴミの日スキルへ。知りたい調布市のゴミの日はいつですか？今日、あした、曜日で訊いてください。",
-        "知りたい調布市のゴミの日はいつですか？今日、あした、曜日で訊いてください。", False))
+        True, "知りたい調布市のゴミの日はいつですか？今日、あした、曜日で訊いてください。", False))
 
 
 def on_launch(launch_request):
@@ -125,7 +146,8 @@ def on_session_ended(sessionended_request):
     logger.info("on_session_ended got request{}".format(sessionended_request))
     """ ユーザが明示的にではなく、セッションが終了した場合、スキルからはレスポンスを返せない """
     if sessionended_request['type'] != "SessionEndedRequest":
-        return create_all_response(create_response("さようなら。", None, True))
+        return create_all_response(create_response("さようなら。",
+                                                   False, None, True))
 
 
 def is_allowed_location_api(context_system):
@@ -141,15 +163,16 @@ def on_intent(context_system, intent_request):
     logger.info("on_launch got request{}".format(intent_request))
 
     if is_allowed_location_api(context_system):
+        needs_card = True
         zip_code = fetch_zip_code(
             context_system['apiEndpoint'],
             context_system['device']['deviceId'],
             context_system['user']['permissions']['consentToken'])
         district_num = find_district_number(zip_code)
     else:
-        # TODO: ロケーションAPIを有効にするように促すメッセージを返さなければならない
-        #       現状はスキルに端末の国と郵便番号の権限を許可していない場合は第一地区としている
-        district_num = 1
+        needs_card = False
+        create_all_response(create_response(
+            "スキルに端末の国と郵便番号のアクセス権を許可してください。", needs_card, None, True))
     intent_name = intent_request['intent']['name']
     if intent_name == "GetChofuCityGabageIntent":
         logger.info("got When{}".format(intent_request[
@@ -164,15 +187,16 @@ def on_intent(context_system, intent_request):
             when_resol_id = when_resol_value['id']
         except KeyError:
             return create_all_response(create_response(
-                "いつのごみが知りたいかが分かりませんでした。\
-                もう一度、いつのごみが知りたいかを今日、あした、曜日で訊いてください。", None, False))
+                "いつのごみが知りたいかが分かりませんでした。もう一度、いつのごみが知りたいかを今日、あした、曜日で訊いてください。",
+                needs_card, None, False))
 
         target_date = find_target_date(when_resol_id, when_resol_name)
         garbage_type = fetch_garbage_type(district_num, target_date)
 
         return create_all_response(
             create_response("{}の第{}地区のごみ出しは{}です。".format(
-                when_value, str(district_num), garbage_type), None, True))
+                when_value, str(district_num), garbage_type),
+                needs_card, None, True))
     elif intent_name == "AMAZON.HelpIntent":
         return get_welcome_response()
     elif intent_name == "AMAZON.CancelIntent" \
