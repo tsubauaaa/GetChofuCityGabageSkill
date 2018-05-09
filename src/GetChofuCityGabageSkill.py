@@ -101,6 +101,7 @@ def find_district_number(zip_code):
     params = {'zipcode': zip_code}
     req = urllib.request.Request(
         zipcloud_url + "?" + urllib.parse.urlencode(params))
+    # TODO: 住所が取得できなかった場合の例外処理を追加
     res = urllib.request.urlopen(req)
     addr_data = json.loads(res.read())
     address3 = addr_data['results'][0]['address3']
