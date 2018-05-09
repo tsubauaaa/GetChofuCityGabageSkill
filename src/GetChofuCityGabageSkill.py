@@ -176,9 +176,8 @@ def on_intent(context_system, intent_request):
     if intent_name == "GetChofuCityGabageIntent":
         logger.info("got When{}".format(intent_request[
                     'intent']['slots']['When']))
-        when_value = intent_request['intent']['slots']['When']['value']
-        # TODO: try - exceptまたはifのどちらで判定するか最適化する
         try:
+            when_value = intent_request['intent']['slots']['When']['value']
             when_resol_value = intent_request['intent']['slots']['When'][
                 'resolutions']['resolutionsPerAuthority'][0][
                 'values'][0]['value']
