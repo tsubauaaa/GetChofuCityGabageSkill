@@ -162,7 +162,8 @@ def is_allowed_location_api(context_system):
 
 
 def on_intent(context_system, intent_request):
-    logger.info("on_launch got request{}".format(intent_request))
+    logger.info("on_intent got request{} context_system{}".format(
+        intent_request, context_system))
 
     if is_allowed_location_api(context_system):
         zip_code = fetch_zip_code(
@@ -175,8 +176,6 @@ def on_intent(context_system, intent_request):
             "スキルに端末の国と郵便番号のアクセス権を許可してください。", True, None, True))
     intent_name = intent_request['intent']['name']
     if intent_name == "GetChofuCityGabageIntent":
-        logger.info("got When{}".format(intent_request[
-                    'intent']['slots']['When']))
         try:
             when_value = intent_request['intent']['slots']['When']['value']
             when_resol_value = intent_request['intent']['slots']['When'][
