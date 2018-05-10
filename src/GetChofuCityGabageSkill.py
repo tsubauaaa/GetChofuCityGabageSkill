@@ -101,7 +101,7 @@ def find_district_number(zip_code):
     params = {'zipcode': zip_code}
     req = urllib.request.Request(
         zipcloud_url + "?" + urllib.parse.urlencode(params))
-    # TODO: HTTPErrorとURLErrorの場合を追加する
+    # TODO: HTTPErrorとURLErrorの場合を追加する。その際、should_end_sessionをFalseにして再度聞く
     try:
         with urllib.request.urlopen(req) as res:
             addr_data = json.loads(res.read())
