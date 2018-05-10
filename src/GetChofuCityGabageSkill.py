@@ -108,7 +108,7 @@ def find_district_number(zip_code):
             address3 = addr_data['results'][0]['address3']
     except KeyError:
         return create_all_response(create_response(
-            "町域名が分かりませんでした。恐れ入りますが、調布市内で最初からお使いください。", False, None, True))
+            "町域名が分かりませんでした。恐れ入りますが、調布市内で再度お使いください。", False, None, True))
 
     if address3 in {"仙川町", "入間町", "若葉町", "緑ケ丘", "国領町"}:
         district_num = 1
