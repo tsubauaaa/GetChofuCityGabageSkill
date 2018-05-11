@@ -145,7 +145,7 @@ def get_welcome_response():
 
 def get_helpintent_response():
     return create_all_response(create_response(
-        "調布市のごみの日を答えます。例えば、明日のごみを教えて？と訊くと明日に捨てられるごみを答えます。",
+        "このスキルは調布市のごみの日を教えてくれるスキルです。例えば、明日のごみを教えて？と訊くと明日に捨てられるごみを教えてくれます。",
         True, None, False))
 
 
