@@ -106,7 +106,7 @@ def find_district_number(zip_code):
         with urllib.request.urlopen(req) as res:
             addr_data = json.loads(res.read())
             address3 = addr_data['results'][0]['address3']
-    except KeyError:
+    except (KeyError, TypeError):
         return create_all_response(create_response(
             "町域名が分かりませんでした。恐れ入りますが、調布市内で再度お使いください。", False, None, True))
 
@@ -141,6 +141,12 @@ def get_welcome_response():
     return create_all_response(create_response(
         "ようこそ、調布市のゴミの日スキルへ。知りたい調布市のゴミの日はいつですか？今日、あした、曜日で訊いてください。",
         True, "知りたい調布市のゴミの日はいつですか？今日、あした、曜日で訊いてください。", False))
+
+
+def get_helpintent_response():
+    return create_all_response(create_response(
+        "調布市のごみの日を答えます。例えば、明日のごみを教えて？と訊くと明日に捨てられるごみを答えます。",
+        True, None, False))
 
 
 def on_launch(launch_request):
@@ -200,7 +206,7 @@ def on_intent(context_system, intent_request):
                 when_value, str(district_num), garbage_type),
                 False, None, True))
     elif intent_name == "AMAZON.HelpIntent":
-        return get_welcome_response()
+        return get_helpintent_response()
     elif intent_name == "AMAZON.CancelIntent" \
                         or intent_name == "AMAZON.StopIntent":
         return on_session_ended(intent_request)
