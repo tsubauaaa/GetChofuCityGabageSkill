@@ -105,26 +105,29 @@ def find_district_number(zip_code):
     try:
         with urllib.request.urlopen(req) as res:
             addr_data = json.loads(res.read())
+            address2 = addr_data['results'][0]['address2']
             address3 = addr_data['results'][0]['address3']
     except (KeyError, TypeError):
-            address3 = None
+        address2, address3 = None
 
-    if address3 in {"仙川町", "入間町", "若葉町", "緑ケ丘", "国領町"}:
-        district_num = 1
-    elif address3 \
-            in {"西つつじケ丘", "菊野台", "飛田給", "上石原", "東つつじケ丘", "富士見町", "野水", "西町"}:
-        district_num = 2
-    elif address3 in {"深大寺東町", "深大寺元町", "布田", "深大寺北町", "深大寺南町", "染地"}:
-        district_num = 3
-    elif address3 in {"調布ケ丘", "柴崎", "多摩川", "下石原", "八雲台", "佐須町", "小島町"}:
-        district_num = 4
-    elif address3 is None:
-        """ zipcloudから町域名が取得できない場合、district_numを5とする """
+    if address2 == "調布市":
+        if address3 in {"仙川町", "入間町", "若葉町", "緑ケ丘", "国領町"}:
+            district_num = 1
+        elif address3 in \
+                {"西つつじケ丘", "菊野台", "飛田給", "上石原", "東つつじケ丘", "富士見町", "野水", "西町"}:
+            district_num = 2
+        elif address3 in {"深大寺東町", "深大寺元町", "布田", "深大寺北町", "深大寺南町", "染地"}:
+            district_num = 3
+        elif address3 in {"調布ケ丘", "柴崎", "多摩川", "下石原", "八雲台", "佐須町", "小島町"}:
+            district_num = 4
+    elif address2 is None:
+        """ zipcloudから住所が取得できない場合、district_numを5とする """
         district_num = 5
     else:
-        """ 町域名が調布市内ではない場合、district_numを6とする """
+        """ 住所が調布市ではない場合、district_numを6とする """
         district_num = 6
-    return district_num, address3
+
+    return district_num, address2, address3
 
 
 def fetch_zip_code(api_host, device_id, access_token):
@@ -187,14 +190,14 @@ def on_intent(context_system, intent_request):
             "スキルに端末の国と郵便番号のアクセス権を許可してください。", True, None, True))
 
     """ ユーザのAlexa端末の所在地が不明であったり、調布市内ではない場合、その旨を応答する """
-    district_num, address3 = find_district_number(zip_code)
+    district_num, address2, address3 = find_district_number(zip_code)
     if district_num == 5:
         return create_all_response(create_response(
-            "町域名が分かりませんでした。恐れ入りますが、調布市内で再度お使いください。", False, None, True))
+            "住所が分かりませんでした。恐れ入りますが、調布市で再度お使いください。", False, None, True))
     elif district_num == 6:
         return create_all_response(create_response(
-            "{}は調布市ではないため、スキルは対応していません。調布市内でお使いください。".format(
-                address3), False, None, True))
+            "{}{}は調布市ではないため、スキルは対応していません。調布市でお使いください。".format(
+                address2, address3), False, None, True))
 
     intent_name = intent_request['intent']['name']
     if intent_name == "GetChofuCityGabageIntent":
