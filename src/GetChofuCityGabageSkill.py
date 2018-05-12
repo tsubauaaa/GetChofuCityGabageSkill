@@ -108,7 +108,8 @@ def find_district_number(zip_code):
             address2 = addr_data['results'][0]['address2']
             address3 = addr_data['results'][0]['address3']
     except (KeyError, TypeError):
-        address2, address3 = None
+        address2 = None
+        address3 = None
 
     if address2 == "調布市":
         if address3 in {"仙川町", "入間町", "若葉町", "緑ケ丘", "国領町"}:
