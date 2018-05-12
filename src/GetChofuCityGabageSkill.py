@@ -179,28 +179,28 @@ def on_intent(context_system, intent_request):
     logger.info("on_intent got request{} context_system{}".format(
         intent_request, context_system))
 
-    """ ユーザが、スキルに端末の国と郵便番号のアクセス権を許可しているか確認してから郵便番号を取得する """
-    if is_allowed_location_api(context_system):
-        zip_code = fetch_zip_code(
-            context_system['apiEndpoint'],
-            context_system['device']['deviceId'],
-            context_system['user']['permissions']['consentToken'])
-    else:
-        return create_all_response(create_response(
-            "スキルに端末の国と郵便番号のアクセス権を許可してください。", True, None, True))
-
-    """ ユーザのAlexa端末の所在地が不明であったり、調布市内ではない場合、その旨を応答する """
-    district_num, address2, address3 = find_district_number(zip_code)
-    if district_num == 5:
-        return create_all_response(create_response(
-            "住所が分かりませんでした。恐れ入りますが、調布市で再度お使いください。", False, None, True))
-    elif district_num == 6:
-        return create_all_response(create_response(
-            "{}{}は調布市ではないため、スキルは対応していません。調布市でお使いください。".format(
-                address2, address3), False, None, True))
-
     intent_name = intent_request['intent']['name']
     if intent_name == "GetChofuCityGabageIntent":
+        """ ユーザが、スキルに端末の国と郵便番号のアクセス権を許可しているか確認してから郵便番号を取得する """
+        if is_allowed_location_api(context_system):
+            zip_code = fetch_zip_code(
+                context_system['apiEndpoint'],
+                context_system['device']['deviceId'],
+                context_system['user']['permissions']['consentToken'])
+        else:
+            return create_all_response(create_response(
+                "スキルに端末の国と郵便番号のアクセス権を許可してください。", True, None, True))
+
+        """ ユーザのAlexa端末の所在地が不明であったり、調布市内ではない場合、その旨を応答する """
+        district_num, address2, address3 = find_district_number(zip_code)
+        if district_num == 5:
+            return create_all_response(create_response(
+                "住所が分かりませんでした。恐れ入りますが、調布市で再度お使いください。", False, None, True))
+        elif district_num == 6:
+            return create_all_response(create_response(
+                "{}{}は調布市ではないため、スキルは対応していません。調布市でお使いください。".format(
+                    address2, address3), False, None, True))
+
         try:
             when_value = intent_request['intent']['slots']['When']['value']
             when_resol_value = intent_request['intent']['slots']['When'][
