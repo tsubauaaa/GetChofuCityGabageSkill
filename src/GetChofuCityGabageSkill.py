@@ -121,6 +121,9 @@ def find_district_number(zip_code):
             district_num = 3
         elif address3 in {"調布ケ丘", "柴崎", "多摩川", "下石原", "八雲台", "佐須町", "小島町"}:
             district_num = 4
+        else:
+            """ 住所が調布市内で町域名の記載がない場合、district_numを7とする """
+            district_num = 7
     elif address2 is None:
         """ zipcloudから住所が取得できない場合、district_numを5とする """
         district_num = 5
@@ -202,6 +205,10 @@ def on_intent(context_system, intent_request):
             return create_all_response(create_response(
                 "{}{}は調布市ではないため、スキルは対応していません。調布市でお使いください。".format(
                     address2, address3), False, None, True))
+        elif district_num == 7:
+            return create_all_response(create_response(
+                "調布市内の町域名が取得出来ませんでした。恐れ入りますが、\
+                端末に調布市内の町域名が取得できる郵便番号を設定してお使いください。", False, None, True))
 
         try:
             when_value = intent_request['intent']['slots']['When']['value']
