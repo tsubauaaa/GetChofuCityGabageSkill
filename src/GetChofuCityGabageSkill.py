@@ -122,10 +122,10 @@ def find_district_number(zip_code):
             """ 住所が調布市内で町域名の記載がない場合、district_numを5とする """
             district_num = 5
     elif address2 is None:
-        """ zipcloudから住所が取得できない場合、district_numを5とする """
+        """ zipcloudから住所が取得できない場合、district_numを6とする """
         district_num = 6
     else:
-        """ 住所が調布市ではない場合、district_numを6とする """
+        """ 住所が調布市ではない場合、district_numを7とする """
         district_num = 7
 
     return district_num, address2, address3
